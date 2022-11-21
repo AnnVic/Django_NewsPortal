@@ -1,0 +1,8 @@
+{% extends 'news/base.html' %}
+{% block content %}
+<div class="container">
+    <h1>{{ article.title }}</h1>
+    <img src="{{ article.image.url }}" width="500" height="200" />
+    {{ article.content|linebreaks }}
+</div>
+{% endblock content %}
