@@ -5,9 +5,8 @@
     <img src="{{ article.image.url }}" width="300" height="200" />
     <a href="{% url 'news:article' article.slug %}"> {{ article.title }}</a>
     <p>{{ article.content|truncatewords:50|linebreaks }}</p>
-
-    {{ article.author }}
-
+    <p>{{ article.created_at|timesince}} ago</p>
+    <p>{{ article.author|linebreaks}}</p>
     <br>
 </div>
 {% endfor %}
