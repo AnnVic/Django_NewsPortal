@@ -28,6 +28,9 @@ def category_content(request, slug):
 
 def article_detail(request, slug):
     article = Article.objects.get(slug=slug)
+    if article:
+        article.update_views()
+
     context = {'article': article,
                'image': article.image,
                }
