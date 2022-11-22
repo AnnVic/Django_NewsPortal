@@ -20,7 +20,15 @@
     <div class="container">
         <h1><a href="{% url 'news:home' %}">News</a></h1>
     </div>
-
+    <div>
+        {% if user.is_authenticated %}
+        <a class="nav-item nav-link" href="#">Profile</a>
+        <a class="nav-item nav-link" href="{% url 'news:logout' %}">Logout</a>
+        {% else %}
+        <a class="nav-item nav-link" href="{% url 'news:login' %}">Login</a>
+        <a class="nav-item nav-link" href="{% url 'news:register' %}">Register</a>
+        {% endif %}
+    </div>
     <ul class="nav justify-content-center">
         {% for category in categories %}
         <li class="nav-item">
