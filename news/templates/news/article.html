@@ -2,9 +2,34 @@
 {% block content %}
 <div class="container">
     <h1>{{ article.title }}</h1>
-    <img src="{{ article.image.url }}" width="500" height="200" />
+    <img src="{{ article.image.url }}" width="500" height="300" />
     {{ article.content|linebreaks }}
     <p>{{ article.created_at|timesince}} ago</p>
     <p>{{ article.author|linebreaks}}</p>
 </div>
+<hr>
+{% with article.comments.count as total_comments %}
+<h3 class="mt-5">
+    {{ total_comments }} comment{{ total_comments|pluralize }}
+</h3>
+{% endwith %}
+{% if not article.comments.all %}
+No comments yet
+{% else %}
+{% for comment in article.get_comments %}
+{% include 'news/comment.html' with comment=comment %}
+{% endfor %}
+{% endif %}
+
+{% if user.is_authenticated %}
+<form action="{% url 'news:article' article.slug %}" method="POST" id="main_form" class="comment_form">
+    <div>
+        <label for="comment">{{ comment.author }}</label>
+        {{ comment_form.content }} {% csrf_token %} <input type="submit" value="Submit">
+    </div>
+    </div>
+</form>
+{% else %} <h3>You need to <a href="{% url 'news:login' %}">Login</a> or <a
+        href="{% url 'news:register' %}">Register</a> to comment</h3>
+{% endif %}
 {% endblock content %}

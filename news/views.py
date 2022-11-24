@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from news.models import Category, Article
-from .forms import NewUserForm, UserUpdateForm, ProfileUpdateForm
+from news.models import Category, Article, Comment
+from .forms import NewUserForm, UserUpdateForm, ProfileUpdateForm, CommentForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
@@ -34,9 +34,35 @@ def article_detail(request, slug):
     article = Article.objects.get(slug=slug)
     if article:
         article.update_views()
+    comments = article.comments.filter(active=True, parent__isnull=True)
+    new_comment = None
+    comment_form = CommentForm(data=request.POST)
+    if request.method == 'POST':
+        #comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            parent_obj = None
+            try:
+                parent_id = int(request.POST.get('parent_id'))
+            except:
+                parent_id = None
+            if parent_id:
+                parent_obj = Comment.objects.get(id=parent_id)
+                if parent_obj:
+                    reply = comment_form.save(commit=False)
+                    reply.parent = parent_obj
+            new_comment = comment_form.save(commit=False)
+            new_comment.author = request.user
+            new_comment.article = article
+
+            new_comment.save()
+            return redirect('news:article', article.slug)
+        else:
+            comment_form = CommentForm()
 
     context = {'article': article,
                'image': article.image,
+               'comments': comments,
+               'comment_form': comment_form,
                }
     return render(request, 'news/article.html', context)
 

@@ -1,0 +1,38 @@
+<div class="border-0 border-start border-2 ps-2" id="{{comment.id}}">
+
+    <div class="mt-3">
+        <strong>{{comment.author}}</strong>
+        {% if comment.parent.author %} to <strong>{{comment.parent.author }}</strong>{% endif %}
+        <small class="text-muted">On {{ comment.created.date }}</small>
+    </div>
+    <div class="border p-2 rounded">
+        <p>{{comment.content}}</p>
+
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+            data-bs-target="#reply-form-container-{{comment.id}}" aria-expanded="false"
+            aria-controls="reply-form-container-{{comment.id}}">
+            Reply
+        </button>
+        <div class="collapse" id="reply-form-container-{{comment.id}}">
+            <div class="card card-body">
+                <form action="{% url 'news:article' article.slug %}" method="POST"
+                    id="reply-form-container-{{comment.id}}" class="comment_form">
+                    <div>
+
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value="{{article.id}}">
+                        <input type="hidden" name="parent_id" value="{{comment.id}}">
+                        {{ comment_form.content }}
+                        <input type="submit" value="Reply">
+                    </div>
+            </div>
+            </form>
+        </div>
+
+
+    </div>
+</div>
+{% for comment in comment.get_comments %}
+{% include 'news/comment.html' with comment=comment %}
+{% endfor %}
+</div>

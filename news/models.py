@@ -1,8 +1,10 @@
-from django.db import models
-from django.urls import reverse
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
+User = get_user_model()
 # Create your models here.
 
 
@@ -48,6 +50,9 @@ class Article(models.Model):
         self.views = self.views + 1
         super(Article, self).save(*args, **kwargs)
 
+    def get_comments(self):
+        return self.comments.filter(parent=None).filter(active=True)
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -64,3 +69,33 @@ class Profile(models.Model):
     @receiver(post_save, sender=User)
     def save_profile(sender, instance, **kwargs):
         instance.profile.save()
+
+
+class Comment(models.Model):
+    article = models.ForeignKey(
+        Article, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True)
+    parent = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+    content = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ('created',)
+
+    def __str__(self):
+        return str(self.author) + ' comment ' + str(self.content)
+
+    def children(self):
+        return Comment.objects.filter(parent=self)
+
+    @property
+    def is_parent(self):
+        if self.parent is not None:
+            return False
+        return True
+
+    def get_comments(self):
+        return Comment.objects.filter(parent=self).filter(active=True)
