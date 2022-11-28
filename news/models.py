@@ -81,6 +81,8 @@ class Comment(models.Model):
     content = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
+    liked = models.ManyToManyField(
+        User, default=None, blank=True, related_name='liked')
 
     class Meta:
         ordering = ('created',)
@@ -99,3 +101,23 @@ class Comment(models.Model):
 
     def get_comments(self):
         return Comment.objects.filter(parent=self).filter(active=True)
+
+    @property
+    def num_likes(self):
+        return self.liked.all().count()
+
+
+LIKE_CHOISES = (
+    ('Like', 'Like'),
+    ('Unlike', 'Unlike'),
+)
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    value = models.CharField(choices=LIKE_CHOISES,
+                             default='Like', max_length=10)
+
+    def __str__(self):
+        return str(self.comment)

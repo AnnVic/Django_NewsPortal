@@ -18,6 +18,7 @@ No comments yet
 {% else %}
 {% for comment in article.get_comments %}
 {% include 'news/comment.html' with comment=comment %}
+<strong>{{ comment.liked.all.count }} likes</strong>
 {% endfor %}
 {% endif %}
 

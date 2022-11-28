@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
-from news.models import Category, Article, Comment
+from news.models import Category, Article, Comment, Like
 from .forms import NewUserForm, UserUpdateForm, ProfileUpdateForm, CommentForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 # Create your views here.
 
 
@@ -38,7 +39,6 @@ def article_detail(request, slug):
     new_comment = None
     comment_form = CommentForm(data=request.POST)
     if request.method == 'POST':
-        #comment_form = CommentForm(data=request.POST)
         if comment_form.is_valid():
             parent_obj = None
             try:
@@ -55,10 +55,28 @@ def article_detail(request, slug):
             new_comment.article = article
 
             new_comment.save()
+            user = request.user
+
             return redirect('news:article', article.slug)
         else:
             comment_form = CommentForm()
-
+    user = request.user
+    if request.method == 'POST':
+        comment_id = request.POST.get('comment_id')
+        comment = Comment.objects.get(id=comment_id)
+        if user in comment.liked.all():
+            comment.liked.remove(user)
+        else:
+            comment.liked.add(user)
+        like, created = Like.objects.get_or_create(
+            user=user, comment_id=comment_id)
+        if not created:
+            if like.value == 'Like':
+                like.value = 'Unlike'
+            else:
+                like.value = 'Like'
+        like.save()
+        return redirect('news:article', article.slug)
     context = {'article': article,
                'image': article.image,
                'comments': comments,
@@ -129,3 +147,24 @@ def profile(request):
     }
 
     return render(request, 'news/profile.html', context)
+
+
+# def like_comment(request):
+    qs = Comment.objects.all()
+    user = request.user
+    if request.method == 'POST':
+        comment_id = request.POST.get('comment_id')
+        comment = Comment.objects.get(id=comment_id)
+        if user in comment.liked.all():
+            comment.liked.remove(user)
+        else:
+            comment.liked.add(user)
+        like, created = Like.objects.get_or_create(
+            user=user, comment_id=comment_id)
+        if not created:
+            if like.value == 'Like':
+                like.value = 'Unlike'
+            else:
+                like.value = 'Like'
+        like.save()
+    return redirect('news:article', article.slug)

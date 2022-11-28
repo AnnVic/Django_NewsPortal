@@ -7,12 +7,27 @@
     </div>
     <div class="border p-2 rounded">
         <p>{{comment.content}}</p>
-
+        {% if user.is_authenticated %}
         <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
             data-bs-target="#reply-form-container-{{comment.id}}" aria-expanded="false"
             aria-controls="reply-form-container-{{comment.id}}">
             Reply
         </button>
+
+        <div class="justify-content-md-end">
+            <form action="{% url 'news:article' article.slug %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="comment_id" value="{{comment.id}}">
+                {% if user not in comment.liked.all %}
+                <button class="btn btn-primary btn-sm" type="submit">Like</button>
+                {% else %}
+                <button class="btn btn-danger btn-sm" type="submit">Unlike</button>
+                {% endif %}
+            </form>
+
+        </div>
+        {% endif %}
+        <strong>{{ comment.liked.all.count }} likes</strong>
         <div class="collapse" id="reply-form-container-{{comment.id}}">
             <div class="card card-body">
                 <form action="{% url 'news:article' article.slug %}" method="POST"
@@ -30,9 +45,9 @@
         </div>
 
 
+        {% for comment in comment.get_comments %}
+        {% include 'news/comment.html' with comment=comment %}
+        {% endfor %}
+
     </div>
-</div>
-{% for comment in comment.get_comments %}
-{% include 'news/comment.html' with comment=comment %}
-{% endfor %}
 </div>
