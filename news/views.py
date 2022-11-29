@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.views.generic import ListView
+from django.shortcuts import get_object_or_404, render, redirect
 from news.models import Category, Article, Comment, Like
 from .forms import NewUserForm, UserUpdateForm, ProfileUpdateForm, CommentForm
 from django.contrib.auth import login, authenticate, logout
@@ -13,9 +14,11 @@ def home(request):
     categories = Category.objects.all()
     articles = Article.objects.filter(
         is_published=True).order_by('-created_at')
+    popular = Article.objects.filter(is_published=True).order_by('-views')[0:3]
     context = {
         'categories': categories,
         'articles': articles,
+        'popular': popular,
     }
     return render(request, 'news/index.html', context)
 
@@ -23,15 +26,17 @@ def home(request):
 def category_content(request, slug):
     category = Category.objects.get(slug=slug)
     articles = Article.objects.all()
+    categories = Category.objects.all()
     context = {
         'articles': articles,
         'category': category,
-
+        'categories': categories,
     }
     return render(request, 'news/category.html', context)
 
 
 def article_detail(request, slug):
+    categories = Category.objects.all()
     article = Article.objects.get(slug=slug)
     if article:
         article.update_views()
@@ -81,6 +86,7 @@ def article_detail(request, slug):
                'image': article.image,
                'comments': comments,
                'comment_form': comment_form,
+               'categories': categories,
                }
     return render(request, 'news/article.html', context)
 
@@ -149,22 +155,7 @@ def profile(request):
     return render(request, 'news/profile.html', context)
 
 
-# def like_comment(request):
-    qs = Comment.objects.all()
-    user = request.user
-    if request.method == 'POST':
-        comment_id = request.POST.get('comment_id')
-        comment = Comment.objects.get(id=comment_id)
-        if user in comment.liked.all():
-            comment.liked.remove(user)
-        else:
-            comment.liked.add(user)
-        like, created = Like.objects.get_or_create(
-            user=user, comment_id=comment_id)
-        if not created:
-            if like.value == 'Like':
-                like.value = 'Unlike'
-            else:
-                like.value = 'Like'
-        like.save()
-    return redirect('news:article', article.slug)
+def search(request):
+    search = request.GET.get('search')
+    articles = Article.objects.filter(Q(title__icontains=search))
+    return render(request, 'news/search.html', {'articles': articles})

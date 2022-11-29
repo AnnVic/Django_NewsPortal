@@ -1,13 +1,40 @@
 {% extends 'news/base.html' %}
+{% block navbar %}
+{% include 'news/navbar.html' %}
+{% endblock %}
 {% block content %}
+<br />
+<br />
+<div class="container">
+    <div class="container">
+        <div class="row">
+            {% for article in popular %}
+            <div class="col-sm">
+                <img src="{{ article.image.url }}" width="380" height="200" />
+                <strong><a href="{% url 'news:article' article.slug %}"> {{ article.title }}</a></strong>
+                <p>{{ article.content|truncatewords:30|linebreaks }}</p>
+                <p>{{ article.created_at|timesince}} ago</p>
+                <p>{{ article.author|linebreaks}}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<br />
+<br />
 {% for article in articles %}
 <div class="container">
-    <img src="{{ article.image.url }}" width="300" height="200" />
-    <a href="{% url 'news:article' article.slug %}"> {{ article.title }}</a>
-    <p>{{ article.content|truncatewords:50|linebreaks }}</p>
-    <p>{{ article.created_at|timesince}} ago</p>
-    <p>{{ article.author|linebreaks}}</p>
-    <br>
+    <div class="row g-0 bg-light position-relative">
+        <div class="col-md-6 mb-md-0 p-md-4">
+            <img src="{{ article.image.url }}" class="w-100">
+        </div>
+        <div class="col-md-6 p-4 ps-md-0">
+            <h5 class="mt-0"><a href="{% url 'news:article' article.slug %}"> {{ article.title }}</a></h5>
+            <p>{{ article.content|truncatewords:50|linebreaks }}</p>
+            <p>{{ article.created_at|timesince}} ago</p>
+            <p>{{ article.author|linebreaks}}</p>
+        </div>
+    </div>
 </div>
 {% endfor %}
 {% endblock content %}

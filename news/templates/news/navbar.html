@@ -1,0 +1,13 @@
+<div class="container">
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            {% for category in categories %}
+            <h3><a href="{% url 'news:category' category.slug %}" class="nav-link">{{category.title}}</a></h3>
+            {% endfor %}
+            <form class="d-flex" action="{% url 'news:search' %}">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+</div>
